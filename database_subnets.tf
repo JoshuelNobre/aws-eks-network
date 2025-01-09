@@ -43,17 +43,45 @@ resource "aws_network_acl_rule" "deny" {
   to_port    = 0
 }
 
+resource "aws_network_acl_association" "database" {
+  count = length(var.database_subnets)
+
+  network_acl_id = aws_network_acl.database.id
+  subnet_id = aws_subnet.database[count.index].id
+}
+
 resource "aws_network_acl_rule" "allow_3306" {
 
-  count = length(var.private_subnets)  
+  count = length(var.private_subnets)
 
   network_acl_id = aws_network_acl.database.id
   rule_number    = 10 + count.index
-  rule_action    = "allow"
 
-  protocol   = "tcp"
+  egress = false
 
-  cidr_block = aws_subnet.private[count.index].cidr
+  rule_action = "allow"
+
+  protocol = "tcp"
+
+  cidr_block = aws_subnet.private[count.index].cidr_block
   from_port  = 3306
   to_port    = 3306
+}
+
+resource "aws_network_acl_rule" "allow_6379" {
+
+  count = length(var.private_subnets)
+
+  network_acl_id = aws_network_acl.database.id
+  rule_number    = 20 + count.index
+
+  egress = false
+
+  rule_action = "allow"
+
+  protocol = "tcp"
+
+  cidr_block = aws_subnet.private[count.index].cidr_block
+  from_port  = 6379
+  to_port    = 6379
 }
