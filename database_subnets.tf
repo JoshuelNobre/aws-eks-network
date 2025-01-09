@@ -47,7 +47,7 @@ resource "aws_network_acl_association" "database" {
   count = length(var.database_subnets)
 
   network_acl_id = aws_network_acl.database.id
-  subnet_id = aws_subnet.database[count.index].id
+  subnet_id      = aws_subnet.database[count.index].id
 }
 
 resource "aws_network_acl_rule" "allow_3306" {
